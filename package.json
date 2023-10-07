@@ -20,7 +20,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "yarn setup && wget https://github.com/neka-nat/web-sam/releases/download/1.0.0/mobilesam.decoder.quant.onnx -P public/models && wget https://github.com/neka-nat/web-sam/releases/download/1.0.0/mobilesam.encoder.onnx -P public/models && react-scripts build",
     "setup": "node ort-wasm-handler.cjs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
