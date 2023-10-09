@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import * as ort from 'onnxruntime-web';
 import * as tf from '@tensorflow/tfjs';
+import "../App.css";
 
 type ImageUploaderProps = {
   onImageProcessed: (embeddings: any, imageData: ImageData | undefined) => void;
@@ -9,6 +10,7 @@ type ImageUploaderProps = {
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageProcessed, onStatusChange }) => {
   const imageRef = useRef<HTMLImageElement | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -27,6 +29,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageProcessed, onStatu
 
   const handleImage = async (img: HTMLImageElement) => {
     onStatusChange(`Uploaded image is ${img.width}x${img.height}px. Loading the encoder model (~28 MB).`);
+    setIsLoading(true);
     ort.env.wasm.numThreads = 1;
     const resizedTensor = await ort.Tensor.fromImage(img, { resizedWidth: 1024, resizedHeight: 684 });
     const resizeImage = resizedTensor.toImageData();
@@ -47,6 +50,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageProcessed, onStatu
     } catch (error) {
         console.log(`caught error: ${error}`)
         onStatusChange(`Error: ${error}`);
+    } finally {
+        setIsLoading(false);
     }
     const end = Date.now();
     const time_taken = (end - start) / 1000;
@@ -57,6 +62,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageProcessed, onStatu
     <div>
       <input type="file" onChange={handleFileChange} />
       <img ref={imageRef} style={{ display: 'none' }} alt="Uploaded" />
+      {isLoading && <div className="spinner"><div className="loader"></div></div>}
     </div>
   );
 };
